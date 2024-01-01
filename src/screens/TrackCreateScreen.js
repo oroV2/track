@@ -1,36 +1,16 @@
-import './_mockLocation'
+// import '../screens/_mockLocation'
 import { StyleSheet, SafeAreaView } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext } from 'react'
 import { Text } from 'react-native-elements'
 import Map from '../components/Map'
-import { requestForegroundPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location'
 import { Context as LocationContext } from '../context/LocationContext'
+import useLocation from '../hooks/useLocation'
+import { withNavigationFocus } from 'react-navigation'
 
-const TrackCreateScreen = () => {
+const TrackCreateScreen = ({ isFocused }) => {
     const { addLocation } = useContext(LocationContext)
-    const [err, setErr] = useState(null);
+    const [err] = useLocation(isFocused, addLocation)
 
-    const startWatching = async () => {
-        try {
-            const { granted } = await requestForegroundPermissionsAsync();
-            if (!granted) {
-                throw new Error('Location permission not granted');
-            }
-            await watchPositionAsync({
-                accuracy: Accuracy.BestForNavigation,
-                timeInterval: 1000,
-                distanceInterval: 10,
-            }, (location) => {
-                addLocation(location)
-            });
-        } catch (e) {
-            setErr(e);
-        }
-    };
-
-    useEffect(() => {
-        startWatching();
-    }, [])
 
     return (
         <SafeAreaView>
@@ -41,6 +21,6 @@ const TrackCreateScreen = () => {
     )
 }
 
-export default TrackCreateScreen
+export default withNavigationFocus(TrackCreateScreen)
 
 const styles = StyleSheet.create({})
