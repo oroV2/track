@@ -1,11 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, SafeAreaView } from 'react-native'
 import React from 'react'
 
 const TrackCreateScreen = () => {
     return (
-        <View>
+        <SafeAreaView>
             <Text>TrackCreateScreen</Text>
-        </View>
+        </SafeAreaView>
     )
 }
 

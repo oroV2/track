@@ -9,15 +9,31 @@ const authReducer = (state, action) => {
             return { ...state, errorMessage: action.payload };
         case 'signup':
             return { errorMessage: '', token: action.payload };
+        case 'signin':
+            return { errorMessage: '', token: action.payload };
+        case 'clearErrorMessage':
+            return { ...state, errorMessage: '' };
         default:
             return state;
     }
 }
 
+const tryLocalSignin = () => async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (token) {
+        navigate('TrackList');
+    } else {
+        navigate('Signup');
+    }
+}
+
+const clearErrorMessage = dispatch => () => {
+    dispatch({ type: 'clearErrorMessage' });
+}
+
 const signup = dispatch => async ({ email, password }, callback) => {
     try {
         const response = await tracker.post('/signup', { email, password });
-        console.log(response.data);
         await AsyncStorage.setItem('token', response.data.token);
         dispatch({ type: 'signup', payload: response.data.token })
 
@@ -28,20 +44,27 @@ const signup = dispatch => async ({ email, password }, callback) => {
 };
 
 
-const signin = (dispatch) => {
-    return ({ email, password }) => {
+const signin = dispatch => async ({ email, password }) => {
+    try {
+        const response = await tracker.post('/signin', { email, password });
+        await AsyncStorage.setItem('token', response.data.token);
+        dispatch({ type: 'signin', payload: response.data.token });
 
-    };
+        navigate('TrackList');
+    } catch (err) {
+        dispatch({ type: 'add_error', payload: 'Something went wrong with sign in.' })
+    }
 };
 
-const signout = (dispatch) => {
-    return () => {
 
-    };
+const signout = dispatch => async () => {
+    await AsyncStorage.removeItem('token');
+    dispatch({ type: 'signout' });
+    navigate('loginFlow');
 };
 
 export const { Provider, Context } = createDataContext(
     authReducer,
-    { signin, signout, signup },
+    { signin, signout, signup, clearErrorMessage, tryLocalSignin },
     { token: null, errorMessage: '' }
 );
